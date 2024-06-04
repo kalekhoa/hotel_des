@@ -65,6 +65,7 @@ class _Onboarding1WidgetState extends State<Onboarding1Widget> {
                   ),
                 ),
               ),
+              const SizedBox(height: 50),
               Flexible(
                 child: ElevatedButton(
                   onPressed: () {
