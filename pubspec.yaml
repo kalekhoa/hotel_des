@@ -67,12 +67,13 @@ flutter:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
   assets:
+    - acess/
      
-    - acess/apple.png
-    - acess/google.png
-    - acess/hai.png
-    - acess/img_fb.png
-    - acess/logo.png
+    # - acess/apple.png
+    # - acess/google.png
+    # - acess/hai.png
+    # - acess/img_fb.png
+    # - acess/logo.png
 
 
   
