@@ -29,7 +29,7 @@ class LoginPage extends StatelessWidget {
                 const SizedBox(height: 1),
 
                 Image.asset(
-                  'assets/logo.png', // Sửa lại đường dẫn tới logo
+                  'acess/logo.png', // Sửa lại đường dẫn tới logo
                   width: 168,
                   height: 181,
                 ),
@@ -83,7 +83,7 @@ class LoginPage extends StatelessWidget {
                     SquareTile(imagePath: 'acess/img_fb.png'), // Sửa lại đường dẫn tới hình ảnh facebook
                   ],
                 ),
-                const SizedBox(height: 50),
+                const SizedBox(height: 30),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 0.0),
                   child: Row(
@@ -91,11 +91,29 @@ class LoginPage extends StatelessWidget {
                     children: const [
                       Text(
                         'Quên Mật Khẩu?',
-                        style: TextStyle(color: Colors.black),
+                        style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
                 ),
+                const SizedBox(height: 10,),
+                Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  Text(
+                    'Không Có Tài Khoản?',
+                    
+                  ),
+                  SizedBox(width: 4),
+                  Text(
+                    'Đăng Kí Ngay',
+                    style: TextStyle(
+                      color: Color.fromARGB(255, 0, 0, 0),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              )
               ],
             ),
           ),

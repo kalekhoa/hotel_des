@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hotel_des/components/gotodashboad_button.dart';
 
 class Onboarding4Widget extends StatefulWidget {
   const Onboarding4Widget({super.key});
