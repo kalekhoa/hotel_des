@@ -4,8 +4,7 @@ import 'package:hotel_des/pages/login_page.dart';
 import 'package:hotel_des/pages/onboarding_1.dart';
 import 'package:hotel_des/pages/onboarding_2.dart';
 import 'package:hotel_des/pages/onboarding_3.dart';
-import 'pages/register_page.dart';
-
+import 'package:hotel_des/pages/register_page.dart';
 void main() {
   runApp(const MyApp());
 }
