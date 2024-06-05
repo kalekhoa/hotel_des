@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class Onboarding1Widget extends StatefulWidget {
-  const Onboarding1Widget({super.key});
+class Onboarding2Widget extends StatefulWidget {
+  const Onboarding2Widget({super.key});
 
   @override
-  State<Onboarding1Widget> createState() => _Onboarding1WidgetState();
+  State<Onboarding2Widget> createState() => _Onboarding2WidgetState();
 }
 
-class _Onboarding1WidgetState extends State<Onboarding1Widget> {
+class _Onboarding2WidgetState extends State<Onboarding2Widget> {
   late FocusNode _unfocusNode;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
@@ -35,22 +35,36 @@ class _Onboarding1WidgetState extends State<Onboarding1Widget> {
         key: scaffoldKey,
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: SafeArea(
+          
+          
           top: true,
           child: Column(
+            
             mainAxisSize: MainAxisSize.max,
             children: [
-              
+              Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 30.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: const [
+                      Text(
+                        'Bỏ Qua',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: Image.asset(
-                  'acess/hai.png',
+                  'acess/3.png',
                   width: 444,
                   height: 400,
                   fit: BoxFit.cover,
                 ),
               ),
               Text(
-                'Tìm chỗ nghỉ tiếp theo',
+                'Lên kế hoạch dễ dàng và nhanh chóng',
                 style: GoogleFonts.outfit(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -59,7 +73,7 @@ class _Onboarding1WidgetState extends State<Onboarding1Widget> {
               Padding(
                 padding: EdgeInsets.all(18),
                 child: Text(
-                  'Tìm ưu đãi khách sạn, chỗ nghỉ dạng nhà và nhiều hơn nữa...',
+                  'Khám phá các điểm đến hàng đầu theo cách bạn thích ở Việt Nam',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.readexPro(
                     fontSize: 16,

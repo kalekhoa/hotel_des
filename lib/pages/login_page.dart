@@ -37,7 +37,7 @@ class LoginPage extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 30.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
+                    children: const [
                       Text(
                         'Email',
                         style: TextStyle(fontWeight: FontWeight.bold),
@@ -56,7 +56,7 @@ class LoginPage extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 30.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
+                    children: const [
                       Text(
                         'Mật Khẩu',
                         style: TextStyle(fontWeight: FontWeight.bold),
@@ -78,9 +78,9 @@ class LoginPage extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: const [
-                    SquareTile(imagePath: 'assets/google.png'), // Sửa lại đường dẫn tới hình ảnh google
+                    SquareTile(imagePath: 'acess/google.png'), // Sửa lại đường dẫn tới hình ảnh google
                     SizedBox(width: 25),
-                    SquareTile(imagePath: 'assets/img_fb.png'), // Sửa lại đường dẫn tới hình ảnh facebook
+                    SquareTile(imagePath: 'acess/img_fb.png'), // Sửa lại đường dẫn tới hình ảnh facebook
                   ],
                 ),
                 const SizedBox(height: 50),
@@ -88,7 +88,7 @@ class LoginPage extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 0.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
+                    children: const [
                       Text(
                         'Quên Mật Khẩu?',
                         style: TextStyle(color: Colors.black),

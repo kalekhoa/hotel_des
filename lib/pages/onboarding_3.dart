@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class Onboarding1Widget extends StatefulWidget {
-  const Onboarding1Widget({super.key});
+class Onboarding3Widget extends StatefulWidget {
+  const Onboarding3Widget({super.key});
 
   @override
-  State<Onboarding1Widget> createState() => _Onboarding1WidgetState();
+  State<Onboarding3Widget> createState() => _Onboarding3WidgetState();
 }
 
-class _Onboarding1WidgetState extends State<Onboarding1Widget> {
+class _Onboarding3WidgetState extends State<Onboarding3Widget> {
   late FocusNode _unfocusNode;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
@@ -39,18 +39,17 @@ class _Onboarding1WidgetState extends State<Onboarding1Widget> {
           child: Column(
             mainAxisSize: MainAxisSize.max,
             children: [
-              
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: Image.asset(
-                  'acess/hai.png',
+                  'acess/4.png',
                   width: 444,
                   height: 400,
                   fit: BoxFit.cover,
                 ),
               ),
               Text(
-                'Tìm chỗ nghỉ tiếp theo',
+                'Dễ Dàng Thanh Toán',
                 style: GoogleFonts.outfit(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -59,7 +58,7 @@ class _Onboarding1WidgetState extends State<Onboarding1Widget> {
               Padding(
                 padding: EdgeInsets.all(18),
                 child: Text(
-                  'Tìm ưu đãi khách sạn, chỗ nghỉ dạng nhà và nhiều hơn nữa...',
+                  'Thanh toán được thực hiện dễ dàng thông qua thẻ ghi nợ, thẻ tín dụng và nhiều cách khác để thanh toán cho nơi ở của bạn.',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.readexPro(
                     fontSize: 16,
@@ -84,8 +83,7 @@ class _Onboarding1WidgetState extends State<Onboarding1Widget> {
                     ),
                     elevation: 3,
                   ),
-                  child: Text(style: TextStyle(color: Colors.white),'Tiếp Tục'),
-                ),
+                    child: Text(style: TextStyle(color: Colors.white),'Tiếp Tục'),                ),
               ),
             ],
           ),

@@ -2,6 +2,8 @@ import 'package:easy_splash_screen/easy_splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:hotel_des/pages/login_page.dart';
 import 'package:hotel_des/pages/onboarding_1.dart';
+import 'package:hotel_des/pages/onboarding_2.dart';
+import 'package:hotel_des/pages/onboarding_3.dart';
 import 'pages/register_page.dart';
 
 void main() {
@@ -15,7 +17,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-    home: Onboarding1Widget(),
+    home: RegisterPage(),
     // home: EasySplashScreen(logo: Image.asset('acess/logo.png'),
     // logoWidth: 150,
     // showLoader: false,
