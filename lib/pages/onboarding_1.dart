@@ -39,7 +39,18 @@ class _Onboarding1WidgetState extends State<Onboarding1Widget> {
           child: Column(
             mainAxisSize: MainAxisSize.max,
             children: [
-              
+              Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 30.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: const [
+                      Text(
+                        'Bỏ Qua',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: Image.asset(

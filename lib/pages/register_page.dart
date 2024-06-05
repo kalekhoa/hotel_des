@@ -10,6 +10,7 @@ class RegisterPage extends StatelessWidget {
   // text editing controllers
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
+  final passwordConfimController = TextEditingController();
 
   // sign user in method
   void registerUserIn() {
@@ -37,7 +38,7 @@ class RegisterPage extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 30.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
+                  children: const [
                     Text(
                       'Email',
                       style: TextStyle(fontWeight: FontWeight.bold,),
@@ -58,7 +59,7 @@ class RegisterPage extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 30.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
+                  children: const [
                     Text(
                       'Mật Khẩu',
                       style: TextStyle(fontWeight: FontWeight.bold,),
@@ -78,7 +79,7 @@ class RegisterPage extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 30.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
+                  children: const [
                     Text(
                       'Xác Nhận Mật Khẩu',
                       style: TextStyle(fontWeight: FontWeight.bold,),
@@ -89,7 +90,7 @@ class RegisterPage extends StatelessWidget {
               const SizedBox(height: 5),
               // password textfield
               MyTextField(
-                controller: passwordController,
+                controller: passwordConfimController,
                 hintText: 'Nhập Lại Mật Khẩu',
                 obscureText: true,
               ),
