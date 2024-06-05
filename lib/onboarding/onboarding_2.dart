@@ -43,7 +43,7 @@ class _Onboarding2WidgetState extends State<Onboarding2Widget> {
             mainAxisSize: MainAxisSize.max,
             children: [
               Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 30.0),
+                  padding: const EdgeInsets.only(top: 20.0, bottom: 0.0, left: 30.0, right: 30.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: const [

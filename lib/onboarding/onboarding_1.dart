@@ -40,7 +40,7 @@ class _Onboarding1WidgetState extends State<Onboarding1Widget> {
             mainAxisSize: MainAxisSize.max,
             children: [
               Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 30.0),
+                  padding: const EdgeInsets.only(top: 20.0, bottom: 0.0, left: 30.0, right: 30.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: const [
@@ -54,7 +54,7 @@ class _Onboarding1WidgetState extends State<Onboarding1Widget> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: Image.asset(
-                  'acess/hai.png',
+                  'acess/2.png',
                   width: 444,
                   height: 400,
                   fit: BoxFit.cover,
