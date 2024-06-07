@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-    home: FogotpassPage(),
+    home: LoginPage(),
     // home: EasySplashScreen(logo: Image.asset('acess/logo.png'),
     // logoWidth: 150,
     // showLoader: false,
