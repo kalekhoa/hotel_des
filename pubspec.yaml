@@ -30,6 +30,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  http: ^1.2.2  
+  image_picker: ^0.8.4+3
+  cached_network_image: ^3.2.0
+  shared_preferences: ^2.2.0
+  intl: ^0.17.0
+  
     
 
 
@@ -76,7 +82,7 @@ flutter:
     # - acess/google.png
     # - acess/hai.png
     # - acess/img_fb.png
-     - acess/image/
+     - acess/
     #- assets/vungtau.png
     #- assets/danang.png
     #- assets/hue.png
