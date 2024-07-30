@@ -1,8 +1,11 @@
-
 import 'package:flutter/material.dart';
-
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:hotel_des/pages/DetailPage.dart'; // Ensure this imports your DetailPage.dart file correctly
 
 class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
   @override
   _HomePageState createState() => _HomePageState();
 }
@@ -12,6 +15,100 @@ class _HomePageState extends State<HomePage> {
   int _nights = 1;
   int _guests = 1;
   int _beds = 1;
+  late Future<List<Map<String, dynamic>>> _hotels;
+
+  @override
+  void initState() {
+    super.initState();
+    _hotels = _fetchHotels();
+  }
+
+  Future<List<Map<String, dynamic>>> _fetchHotels() async {
+    final response = await http.get(Uri.parse('http://localhost:4031/api/hotels/all'));
+    if (response.statusCode == 200) {
+      List<dynamic> hotels = json.decode(response.body);
+      return hotels.cast<Map<String, dynamic>>();
+    } else {
+      throw Exception('Không thể tải danh sách khách sạn');
+    }
+  }
+
+  void _navigateToDetailPage(String id) async {
+    try {
+      final hotelResponse = await http.get(Uri.parse('http://localhost:4031/api/hotels/$id'));
+      if (hotelResponse.statusCode == 200) {
+        Map<String, dynamic> hotel = json.decode(hotelResponse.body);
+
+        final imagesResponse = await http.get(Uri.parse('http://localhost:4031/api/images/searchpichotel/$id'));
+        if (imagesResponse.statusCode == 200) {
+          Map<String, dynamic> imagesData = json.decode(imagesResponse.body);
+          List<String> imagePaths = List<String>.from(imagesData['TenHinhAnhKS']);
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DetailPage(
+                title: hotel['TenKhachSan'],
+                description: hotel['MoTa'],
+                imagePaths: imagePaths,
+                rating: hotel['DanhGia'].toString(),
+                hotelId: hotel['ID'],
+                checkInDate: _selectedDate,
+                checkOutDate: _selectedDate.add(Duration(days: _nights)),
+                guests: _guests,
+                beds: _beds,
+              ),
+            ),
+          );
+        } else {
+          throw Exception('Không thể tải hình ảnh của khách sạn');
+        }
+      } else {
+        throw Exception('Không thể tải thông tin khách sạn');
+      }
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
+  Widget _buildHotelCard(Map<String, dynamic> hotel) {
+    return GestureDetector(
+      onTap: () {
+        _navigateToDetailPage(hotel['ID']);
+      },
+      child: Card(
+        child: Container(
+          width: 250,
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 10),
+              Image.network(hotel['HinhAnhKS']),
+              const SizedBox(height: 8),
+              Text(hotel['TenKhachSan'], style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              Text(utf8.decode(hotel['DiaChi'].runes.toList()), style: TextStyle(color: Colors.grey)),
+
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(hotel['SDT'], style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  Row(
+                    children: [
+                      Icon(Icons.star, color: Colors.amber, size: 16),
+                      Text(hotel['DanhGia'].toString(), style: TextStyle(color: Colors.amber)),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -20,39 +117,79 @@ class _HomePageState extends State<HomePage> {
       firstDate: DateTime(2020),
       lastDate: DateTime(2025),
     );
-    if (picked != null && picked != _selectedDate)
+    if (picked != null && picked != _selectedDate) {
       setState(() {
         _selectedDate = picked;
       });
+    }
   }
 
   void _selectDuration(BuildContext context) async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => DurationPickerPage(),
-      ),
-    );
-    if (result != null) {
+    int? selectedNights = await _showNumberPickerDialog(context, _nights, 'Chọn Số Đêm');
+    if (selectedNights != null) {
       setState(() {
-        _nights = result['nights'];
+        _nights = selectedNights;
       });
     }
   }
 
   void _selectGuests(BuildContext context) async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => GuestPickerPage(),
-      ),
-    );
-    if (result != null) {
+    int? selectedGuests = await _showNumberPickerDialog(context, _guests, 'Chọn Số Khách');
+    int? selectedBeds = await _showNumberPickerDialog(context, _beds, 'Chọn Số Giường');
+    if (selectedGuests != null && selectedBeds != null) {
       setState(() {
-        _guests = result['guests'];
-        _beds = result['beds'];
+        _guests = selectedGuests;
+        _beds = selectedBeds;
       });
     }
+  }
+
+  Future<int?> _showNumberPickerDialog(BuildContext context, int currentValue, String title) async {
+    return showDialog<int>(
+      context: context,
+      builder: (BuildContext context) {
+        int tempValue = currentValue;
+        return AlertDialog(
+          title: Text(title),
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Text('Số lượng: $tempValue'),
+                  Slider(
+                    value: tempValue.toDouble(),
+                    min: 1,
+                    max: 10,
+                    divisions: 9,
+                    label: tempValue.toString(),
+                    onChanged: (double newValue) {
+                      setState(() {
+                        tempValue = newValue.toInt();
+                      });
+                    },
+                  ),
+                ],
+              );
+            },
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('HỦY'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('XÁC NHẬN'),
+              onPressed: () {
+                Navigator.of(context).pop(tempValue);
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -66,7 +203,29 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHeader(),
+            Stack(
+              children: <Widget>[
+                Image.asset(
+                  'assets/background.png',
+                  height: 200,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
+                Positioned.fill(
+                  child: Align(
+                    alignment: Alignment.center,
+                    child: Text(
+                      'Tìm nơi nghỉ dưỡng phù hợp\n cho bạn',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
             _buildSearchCard(context),
             _buildSuggestedDestinations(),
           ],
@@ -75,27 +234,14 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Text(
-        'Tìm nơi nghỉ dưỡng phù hợp cho bạn',
-        style: TextStyle(
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
-
   Widget _buildSearchCard(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(0.0),
       child: Container(
         padding: const EdgeInsets.all(16.0),
         decoration: BoxDecoration(
           color: Colors.grey[300],
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(1),
         ),
         child: Column(
           children: [
@@ -117,9 +263,9 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildLocationRow() {
     return Row(
-      children: [
-        Icon(Icons.location_on, color: Colors.white),
-        const SizedBox(width: 16),
+      children: const [
+        Icon(Icons.location_on, color: Color.fromARGB(153, 0, 0, 0)),
+        SizedBox(width: 16),
         Expanded(
           child: TextField(
             decoration: InputDecoration(
@@ -139,22 +285,22 @@ class _HomePageState extends State<HomePage> {
           onTap: () => _selectDate(context),
           child: Row(
             children: [
-              Icon(Icons.calendar_today, color: Colors.white),
+              Icon(Icons.calendar_today, color: Color.fromARGB(153, 0, 0, 0)),
               const SizedBox(width: 16),
               Expanded(
                 child: Text(
                   'Thứ 2, ${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
-                  style: TextStyle(color: Colors.white),
+                  style: TextStyle(color: Color.fromARGB(153, 0, 0, 0)),
                 ),
               ),
-              Icon(Icons.nights_stay, color: Colors.white),
+              Icon(Icons.nights_stay, color: Color.fromARGB(153, 0, 0, 0)),
               const SizedBox(width: 16),
               Expanded(
                 child: GestureDetector(
                   onTap: () => _selectDuration(context),
                   child: Text(
                     '$_nights Đêm',
-                    style: TextStyle(color: Colors.white),
+                    style: TextStyle(color: Color.fromARGB(153, 0, 0, 0)),
                   ),
                 ),
               ),
@@ -167,7 +313,7 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(width: 32),
             Text(
               'Trả Phòng: Thứ 3, ${_selectedDate.add(Duration(days: _nights)).day}/${_selectedDate.add(Duration(days: _nights)).month}/${_selectedDate.add(Duration(days: _nights)).year}',
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(color: Color.fromARGB(153, 0, 0, 0)),
             ),
           ],
         ),
@@ -180,20 +326,20 @@ class _HomePageState extends State<HomePage> {
       onTap: () => _selectGuests(context),
       child: Row(
         children: [
-          Icon(Icons.person, color: Colors.white),
+          Icon(Icons.person, color: Color.fromARGB(153, 0, 0, 0)),
           const SizedBox(width: 16),
           Expanded(
             child: Text(
               '$_guests Khách',
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(color: Color.fromARGB(153, 0, 0, 0)),
             ),
           ),
-          Icon(Icons.bed, color: Colors.white),
+          Icon(Icons.bed, color: Color.fromARGB(153, 0, 0, 0)),
           const SizedBox(width: 16),
           Expanded(
             child: Text(
               '$_beds Giường',
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(color: Color.fromARGB(153, 0, 0, 0)),
             ),
           ),
         ],
@@ -215,216 +361,42 @@ class _HomePageState extends State<HomePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const SizedBox(height: 16),
           Text(
             'Gợi Ý Điểm Đến',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 16),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                _buildDestinationCard1('Beach Resort Lux', 'Waikiki, 4.1 miles from center', 'Ocean View 1 king Bed\nNo prepayment', '\$720', 4.5),
-                const SizedBox(width: 16),
-                _buildDestinationCard2('Hotel Standard', 'San Francisco, 1.2 miles from center', 'Standard Room\nFree cancellation', '\$650', 4.0),
-              ],
-            ),
+          FutureBuilder<List<Map<String, dynamic>>>(
+            future: _hotels,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Lỗi: ${snapshot.error}'));
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return Center(child: Text('Không có khách sạn nào được tìm thấy.'));
+              } else {
+                return GridView.builder(
+                  shrinkWrap: true, // Allows GridView to be constrained by the parent
+                  physics: NeverScrollableScrollPhysics(), // Disable scrolling within GridView
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2, // Two cards per row
+                    crossAxisSpacing: 16.0, // Space between columns
+                    mainAxisSpacing: 16.0, // Space between rows
+                  ),
+                  itemCount: snapshot.data!.length,
+                  itemBuilder: (context, index) {
+                    return _buildHotelCard(snapshot.data![index]);
+                  },
+                );
+              }
+            },
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildDestinationCard1(String title, String location, String details, String price, double rating) {
-    return Card(
-      child: Container(
-        width: 250,
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Image.network('https://via.placeholder.com/150', fit: BoxFit.cover),
-            Image.asset('acess/image/logo.png'),
-            const SizedBox(height: 8),
-            Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Text(location, style: TextStyle(color: Colors.grey)),
-            const SizedBox(height: 8),
-            Text(details, style: TextStyle(color: Colors.grey)),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(price, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                Row(
-                  children: [
-                    Icon(Icons.star, color: Colors.amber, size: 16),
-                    Text(rating.toString(), style: TextStyle(color: Colors.amber)),
-                  ],
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-Widget _buildDestinationCard2(String title, String location, String details, String price, double rating) {
-    return Card(
-      child: Container(
-        width: 250,
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Image.network('https://via.placeholder.com/150', fit: BoxFit.cover),
-            Image.asset('acess/image/logo.png'),
-            const SizedBox(height: 8),
-            Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Text(location, style: TextStyle(color: Colors.grey)),
-            const SizedBox(height: 8),
-            Text(details, style: TextStyle(color: Colors.grey)),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(price, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                Row(
-                  children: [
-                    Icon(Icons.star, color: Colors.amber, size: 16),
-                    Text(rating.toString(), style: TextStyle(color: Colors.amber)),
-                  ],
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-class DurationPickerPage extends StatefulWidget {
-  @override
-  _DurationPickerPageState createState() => _DurationPickerPageState();
-}
-
-class _DurationPickerPageState extends State<DurationPickerPage> {
-  int _nights = 1;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Chọn Số Đêm'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            for (int i = 1; i <= 6; i++)
-              ListTile(
-                title: Text('$i Đêm'),
-                onTap: () {
-                  setState(() {
-                    _nights = i;
-                  });
-                },
-                trailing: _nights == i ? Icon(Icons.check, color: Colors.blue) : null,
-              ),
-            Spacer(),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context, {'nights': _nights});
-              },
-              child: Text('Lưu'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class GuestPickerPage extends StatefulWidget {
-  @override
-  _GuestPickerPageState createState() => _GuestPickerPageState();
-}
-
-class _GuestPickerPageState extends State<GuestPickerPage> {
-  int _guests = 1;
-  int _beds = 1;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Số Lượng Khách'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Khách', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            Row(
-              children: [
-                IconButton(
-                  onPressed: () {
-                    setState(() {
-                      if (_guests > 1) _guests--;
-                    });
-                  },
-                  icon: Icon(Icons.remove),
-                ),
-                Text('$_guests', style: TextStyle(fontSize: 18)),
-                IconButton(
-                  onPressed: () {
-                    setState(() {
-                      _guests++;
-                    });
-                  },
-                  icon: Icon(Icons.add),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Text('Giường', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            Row(
-              children: [
-                IconButton(
-                  onPressed: () {
-                    setState(() {
-                      if (_beds > 1) _beds--;
-                    });
-                  },
-                  icon: Icon(Icons.remove),
-                ),
-                Text('$_beds', style: TextStyle(fontSize: 18)),
-                IconButton(
-                  onPressed: () {
-                    setState(() {
-                      _beds++;
-                    });
-                  },
-                  icon: Icon(Icons.add),
-                ),
-              ],
-            ),
-            Spacer(),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context, {'guests': _guests, 'beds': _beds});
-              },
-              child: Text('Save'),
-            ),
-          ],
-        ),
       ),
     );
   }

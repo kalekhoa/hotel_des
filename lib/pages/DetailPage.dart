@@ -1,18 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:expandable_text/expandable_text.dart';
-
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:hotel_des/pages/HotelBookingPage.dart';
 
 class DetailPage extends StatelessWidget {
   final String title;
   final String description;
   final List<String> imagePaths;
+  final String rating;
+  final String hotelId;
+  final DateTime checkInDate;
+  final DateTime checkOutDate;
+  final int guests;
+  final int beds;
 
   const DetailPage({
     required this.title,
     required this.description,
     required this.imagePaths,
+    required this.rating,
+    required this.hotelId,
+    required this.checkInDate,
+    required this.checkOutDate,
+    required this.guests,
+    required this.beds,
   });
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -46,7 +61,7 @@ class DetailPage extends StatelessWidget {
               items: imagePaths.map((path) {
                 return Builder(
                   builder: (BuildContext context) {
-                    return Image.asset(
+                    return Image.network(
                       path,
                       fit: BoxFit.cover,
                       width: double.infinity,
@@ -63,13 +78,14 @@ class DetailPage extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        'Beach Resort Lux',
-                        style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                        title,
+                        style: TextStyle(
+                            fontSize: 28, fontWeight: FontWeight.bold),
                       ),
                       SizedBox(width: 150),
                       Icon(Icons.star, color: Colors.amber, size: 30),
                       Text(
-                        '4.8',
+                        rating,
                         style: TextStyle(fontSize: 30),
                       ),
                     ],
@@ -81,8 +97,11 @@ class DetailPage extends StatelessWidget {
                       Icon(Icons.arrow_forward, color: Colors.black),
                       SizedBox(width: 20),
                       Text(
-                        'Địa điểm hàng đầu: Được khách gần đây đánh giá cao (4.8 sao)',
-                        style: TextStyle(color: Colors.grey, fontSize: 16, fontWeight: FontWeight.bold),
+                        'Địa điểm hàng đầu: Được khách gần đây đánh giá cao ($rating sao)',
+                        style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
@@ -102,9 +121,10 @@ class DetailPage extends StatelessWidget {
                       _buildAmenityIcon(Icons.fitness_center, 'Gym'),
                       _buildAmenityIcon(Icons.room_service, 'Dọn Phòng'),
                       _buildAmenityIcon(Icons.local_parking, 'Giữ Xe'),
-                      _buildAmenityIcon(Icons.restaurant, 'Nhà Máy'),
+                      _buildAmenityIcon(Icons.restaurant, 'Nhà Hàng'),
                       _buildAmenityIcon(Icons.breakfast_dining, 'Bữa Sáng'),
-                      _buildAmenityIcon(Icons.local_laundry_service, 'Giặt Giũ'),
+                      _buildAmenityIcon(
+                          Icons.local_laundry_service, 'Giặt Giũ'),
                     ],
                   ),
                   SizedBox(height: 16),
@@ -113,10 +133,15 @@ class DetailPage extends StatelessWidget {
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 8),
-                  Wrap(
-                    children: [
-                      TextDetailHotel(context),
-                    ],
+                  ExpandableText(
+                    utf8.decode(description.runes
+                        .toList()), // Ensure the text is UTF-8 decoded
+                    expandText: 'show more',
+                    collapseText: 'show less',
+                    maxLines: 5,
+                    linkColor: Colors.blue,
+                    linkStyle: TextStyle(fontSize: 17),
+                    style: TextStyle(fontSize: 23),
                   ),
                   SizedBox(height: 16),
                   Text(
@@ -124,18 +149,50 @@ class DetailPage extends StatelessWidget {
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 8),
-                  Wrap(
-                    children: [
-                      TextPolicy(context),
-                    ],
+                  FutureBuilder<Map<String, dynamic>>(
+                    future: _fetchPolicy(hotelId),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(child: CircularProgressIndicator());
+                      } else if (snapshot.hasError) {
+                        return Center(child: Text('Error: ${snapshot.error}'));
+                      } else if (!snapshot.hasData) {
+                        return Center(child: Text('Không có dữ liệu'));
+                      } else {
+                        final policy = snapshot.data!;
+                        return ExpandableText(
+                          utf8.decode(policy['NoiDung'].runes.toList()) ?? '',
+                          expandText: 'show more',
+                          collapseText: 'show less',
+                          maxLines: 5,
+                          linkColor: Colors.blue,
+                          linkStyle: TextStyle(fontSize: 17),
+                          style: TextStyle(fontSize: 23),
+                        );
+                      }
+                    },
                   ),
                   SizedBox(height: 16),
                   Center(
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => HotelBookingPage(
+                              hotelId: hotelId,
+                              checkInDate: checkInDate,
+                              checkOutDate: checkOutDate,
+                              guests: guests,
+                              beds: beds,
+                            ), // Chuyển đến trang HotelBookingPage
+                          ),
+                        );
+                      },
                       child: Text('Chọn Phòng'),
                       style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                         textStyle: TextStyle(fontSize: 16),
                       ),
                     ),
@@ -147,6 +204,17 @@ class DetailPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<Map<String, dynamic>> _fetchPolicy(String hotelId) async {
+    final response = await http.get(
+        Uri.parse('http://localhost:4031/api/policy/searchPolicy/$hotelId'));
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return data.isNotEmpty ? data[0] : {};
+    } else {
+      throw Exception('Failed to fetch policy data');
+    }
   }
 
   Widget _buildAmenityIcon(IconData icon, String label) {
@@ -163,50 +231,10 @@ class DetailPage extends StatelessWidget {
           SizedBox(height: 17),
           Icon(icon, size: 50),
           SizedBox(height: 10),
-          Text(label, textAlign: TextAlign.center, style: TextStyle(fontSize: 15)),
+          Text(label,
+              textAlign: TextAlign.center, style: TextStyle(fontSize: 15)),
         ],
       ),
     );
   }
-}
-
-Widget TextDetailHotel(BuildContext context) {
-  return ExpandableText(
-    'Nếu dự định có một kỳ nghỉ dài, thì Citadines Bayfront Nha Trang chính là lựa chọn dành cho quý khách. Với đầy đủ tiện nghi với chất lượng dịch vụ tuyệt vời, Citadines Bayfront Nha Trang sẽ khiến quý khách cảm thấy thoải mái như ở nhà vậy.\n\n'
-    'Khách sạn này là nơi tốt nhất dành cho những ai mong muốn một nơi thanh bình, thư thái để ẩn mình khỏi đám đông ồn ào, xô bồ.\n\n'
-    'Dịch vụ hướng dẫn song hành với hàng loạt các nghi tinh phong phú sẽ đem đến cho quý khách trải nghiệm của một kỳ nghỉ viên mãn nhất.\n\n'
-    'Trung tâm thể dục của khách sạn là một trong những tiện nghi không thể bỏ qua khi lưu trú tại đây.\n\n'
-    'Hưởng thụ một ngày thư thái đầy thú vị và tận hưởng các dịch vụ tại hồ bơi của khách sạn trong kỳ nghỉ vui bất tận.\n\n'
-    'Quầy tiếp tân 24 giờ luôn sẵn sàng phục vụ quý khách từ thủ tục nhận phòng đến trả phòng hay bất kỳ yêu cầu nào. Nếu cần giúp đỡ xin hãy liên hệ đội ngũ tiếp tân, chúng tôi luôn sẵn sàng hỗ trợ quý khách.\n\n'
-    'Tận hưởng những món ăn yêu thích với phong cách ẩm thực đặc biệt từ Citadines Bayfront Nha Trang chỉ dành riêng cho quý khách.\n\n'
-    'Song WiFi phủ khắp các khu vực chung của khách sạn cho phép quý khách luôn kết nối với gia đình và bạn bè.\n\n'
-    'Citadines Bayfront Nha Trang là khách sạn sở hữu đầy đủ tiện nghi và dịch vụ xuất sắc theo nhận định của hầu hết khách lưu trú.\n\n'
-    'Tận hưởng trải nghiệm lưu trú xa hoa đầy thú vị không đâu sánh bằng tại Citadines Bayfront Nha Trang.',
-    expandText: 'show more',
-    collapseText: 'show less',
-    maxLines: 5,
-    linkColor: Colors.blue,
-    linkStyle: TextStyle(fontSize: 17),
-    style: TextStyle(fontSize: 23),
-  );
-}
-
-Widget TextPolicy(BuildContext context) {
-  return ExpandableText(
-    'Giờ nhận phòng/trả phòng\n\nNhận phòng từ 12:00\nTrả phòng trước 12:00\n\n'
-    'Giấy Tờ Bắt Buộc\n\nKhi nhận phòng, bạn cần cung cấp Giấy Chứng nhận Kết Hôn. Vui lòng mang theo các giấy tờ cần thiết dưới dạng bản cứng.\n\n'
-    'Hướng Dẫn Nhận Phòng Chung\n\n'
-    'Trẻ em dưới 6 tuổi được ở miễn phí nếu sử dụng giường sẵn có.\n'
-    'Trẻ em từ 6 tuổi trở lên (sử dụng giường sẵn có) sẽ phải trả phụ phí khi nhận phòng.\n'
-    'Trẻ em từ 11 tuổi trở lên được tính là người lớn và phải sử dụng giường phụ. Phí giường phụ phụ thuộc vào loại phòng bạn chọn.\n'
-    'Tất cả các yêu cầu đặc biệt đều dựa vào tình trạng phòng trống. Có thể phát sinh phụ phí.\n'
-    'Để biết thêm thông tin cụ thể, vui lòng liên hệ với chỗ nghỉ để biết thêm chi tiết.\n\n'
-    'Khách sẽ được chỗ nghỉ yêu cầu cung cấp giấy tờ khai báo y tế đầy đủ (sàng lọc PCR COVID-19, được cấp trong vòng 72 giờ trước khi nhận phòng). Yêu cầu này sẽ được thực hiện cho tất cả các đặt phòng có ngày đến trước ngày 31 tháng 7 năm 2021.',
-    expandText: 'show more',
-    collapseText: 'show less',
-    maxLines: 5,
-    linkColor: Colors.blue,
-    linkStyle: TextStyle(fontSize: 17),
-    style: TextStyle(fontSize: 23),
-  );
 }
